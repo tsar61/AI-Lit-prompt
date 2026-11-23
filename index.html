@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>AI Prompt Rules</title>
+  <!-- Tailwind CSS (Play CDN) -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            paper: '#f6f4ef',
+            ink: '#1c2430',
+            accent: { DEFAULT: '#0b6e4f', dark: '#085239' }
+          }
+        }
+      }
+    };
+  </script>
+</head>
+<body class="bg-paper text-ink font-sans antialiased">
+  <main class="mx-auto max-w-xl px-5 py-8">
+    <h1 class="text-2xl font-bold mb-1">AI prompt rules</h1>
+    <p class="text-slate-500 leading-relaxed mb-6">
+      Tap the button, then paste the rules under your question to the AI.
+    </p>
+
+    <button id="copy" type="button"
+      class="w-full rounded-2xl bg-accent py-5 text-xl font-bold text-white shadow-[0_2px_0_#085239] transition active:translate-y-px active:shadow-none">
+      Copy prompt
+    </button>
+    <p id="status" role="status" aria-live="polite"
+       class="min-h-[1.5rem] my-3 text-center font-semibold text-accent-dark"></p>
+
+    <section class="rounded-2xl bg-white p-5 shadow-sm">
+      <h2 class="mb-3 text-xs font-semibold uppercase tracking-wider text-slate-500">The prompt</h2>
+      <textarea id="prompt" readonly
+        class="w-full min-h-[22rem] resize-y rounded-xl border border-stone-300 bg-stone-50 p-3 text-base leading-relaxed focus:outline-none focus:ring-2 focus:ring-accent">Please follow these rules in your answer:
+
+1. Do not make anything up. Only use facts from reliable sources (e.g. official reports, international organisations, scientific articles, established news media). If you cannot find a reliable source for a fact, say so clearly instead of guessing.
+
+2. Give a source for every fact, figure or quotation: author or organisation, title, date and, if possible, a link and the page number. Never invent sources or links.
+
+3. If my question is unclear or you are unsure what I mean, ask me before you answer.</textarea>
+    </section>
+
+    <ol class="mt-6 list-decimal pl-5 leading-7 text-slate-500">
+      <li>Write your question to the AI.</li>
+      <li>Paste the rules underneath.</li>
+      <li>Check every source yourself: open it and find the fact.</li>
+    </ol>
+  </main>
+
+  <script>
+    const btn = document.getElementById('copy');
+    const area = document.getElementById('prompt');
+    const status = document.getElementById('status');
+
+    // Fallback for browsers without the Clipboard API
+    function fallbackCopy() {
+      area.removeAttribute('readonly');
+      area.focus();
+      area.select();
+      area.setSelectionRange(0, area.value.length);
+      let ok = false;
+      try { ok = document.execCommand('copy'); } catch (e) { ok = false; }
+      area.setAttribute('readonly', '');
+      return ok;
+    }
+
+    function showDone() {
+      btn.textContent = 'Copied ✓';
+      btn.classList.replace('bg-accent', 'bg-accent-dark');
+      status.textContent = 'Now paste it into the AI chat.';
+      setTimeout(() => {
+        btn.textContent = 'Copy prompt';
+        btn.classList.replace('bg-accent-dark', 'bg-accent');
+      }, 2500);
+    }
+
+    function showManual() {
+      area.focus();
+      area.select();
+      status.textContent = 'Copying was blocked. The text is selected – please copy it by hand.';
+    }
+
+    btn.addEventListener('click', async () => {
+      try {
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+          await navigator.clipboard.writeText(area.value);
+          showDone();
+          return;
+        }
+      } catch (e) { /* use fallback below */ }
+      if (fallbackCopy()) { showDone(); } else { showManual(); }
+    });
+  </script>
+</body>
+</html>
